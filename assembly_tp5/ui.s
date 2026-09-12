@@ -177,7 +177,9 @@ ui_show_spi_fail:
 
 .global ui_show_spi_rx
 ui_show_spi_rx:
-    stp     x29, x30, [sp, #-32]!
+    stp     x29, x30, [sp, #-48]!
+    stp     x19, x20, [sp, #16]
+    str     x21, [sp, #32]
 
     ldr     x19, =tel_pkt
     adr     x20, rx_desc_buf
@@ -234,7 +236,9 @@ ui_show_spi_rx:
     mov     x2, x21
     write_out STDOUT
 
-    ldp     x29, x30, [sp], #32
+    ldp     x19, x20, [sp, #16]
+    ldr     x21, [sp, #32]
+    ldp     x29, x30, [sp], #48
     ret
 
 .global ui_show_spi_rtt
