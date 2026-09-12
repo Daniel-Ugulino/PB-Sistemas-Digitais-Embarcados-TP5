@@ -64,7 +64,7 @@ pos_spi_rtt_len: .quad . - pos_spi_rtt
 suffix_rtt_ms:  .ascii " us"
 suffix_rtt_ms_len: .quad . - suffix_rtt_ms
 rtt_buf:        .space 16
-msg_spi_fail:   .ascii "SPI: /dev/spidev0.0 nao abriu (dtparam=spi=on, reboot, sudo)"
+msg_spi_fail:   .ascii "SPI: /dev/spidev0.0 nao abriu"
 msg_spi_fail_len: .quad . - msg_spi_fail
 
 prefix_free:    .ascii "Zona livre: "
