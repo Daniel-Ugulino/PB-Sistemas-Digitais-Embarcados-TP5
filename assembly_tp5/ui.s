@@ -32,8 +32,33 @@ msg_spi_ok:     .ascii "SPI conectado com sucesso (Tang respondeu)"
 msg_spi_ok_len: .quad . - msg_spi_ok
 msg_spi_wait:   .ascii "SPI: /dev/spidev0.0 ok, aguardando Tang (GPIO9->pin81 MISO + GND)"
 msg_spi_wait_len: .quad . - msg_spi_wait
-pos_spi_rx:     .ascii "\x1b[8;2H\x1b[KRX: "
+pos_spi_rx:     .ascii "\x1b[8;2H\x1b[K"
 pos_spi_rx_len: .quad . - pos_spi_rx
+
+lbl_stx:        .ascii "STX="
+lbl_stx_len:    .quad . - lbl_stx
+lbl_type:       .ascii " TYPE="
+lbl_type_len:   .quad . - lbl_type
+lbl_speed:      .ascii " speed="
+lbl_speed_len:  .quad . - lbl_speed
+lbl_dist_e:     .ascii " dist_e="
+lbl_dist_e_len: .quad . - lbl_dist_e
+lbl_dist_c:     .ascii " dist_c="
+lbl_dist_c_len: .quad . - lbl_dist_c
+lbl_dist_d:     .ascii " dist_d="
+lbl_dist_d_len: .quad . - lbl_dist_d
+lbl_vel_e:      .ascii " vel_e="
+lbl_vel_e_len:  .quad . - lbl_vel_e
+lbl_vel_c:      .ascii " vel_c="
+lbl_vel_c_len:  .quad . - lbl_vel_c
+lbl_vel_d:      .ascii " vel_d="
+lbl_vel_d_len:  .quad . - lbl_vel_d
+lbl_dir:        .ascii " dir="
+lbl_dir_len:    .quad . - lbl_dir
+lbl_etx:        .ascii " ETX="
+lbl_etx_len:    .quad . - lbl_etx
+
+rx_desc_buf:    .space 192
 pos_spi_rtt:    .ascii "\x1b[9;2H\x1b[KRTT: "
 pos_spi_rtt_len: .quad . - pos_spi_rtt
 suffix_rtt_ms:  .ascii " ms"
@@ -154,31 +179,61 @@ ui_show_spi_fail:
 ui_show_spi_rx:
     stp     x29, x30, [sp, #-32]!
 
-    write_str STDOUT, pos_spi_rx, pos_spi_rx_len
+    ldr     x19, =tel_pkt
+    adr     x20, rx_desc_buf
+    mov     x1, x20
 
-    ldr     x9, =tel_pkt
-    mov     w11, #0
-    sub     sp, sp, #16
-
-ui_rx_loop:
-    cmp     w11, #11
-    b.ge    ui_rx_done
-
-    ldrb    w0, [x9, x11]
-    mov     x1, sp
+    buf_append lbl_stx, lbl_stx_len
+    ldrb    w0, [x19, #0]
     bl      format_byte_to_hex
-    mov     w2, #' '
-    strb    w2, [x1], #1
 
-    mov     x1, sp
-    mov     x2, #3
+    buf_append lbl_type, lbl_type_len
+    ldrb    w0, [x19, #1]
+    bl      format_byte_to_hex
+
+    buf_append lbl_speed, lbl_speed_len
+    ldrb    w0, [x19, #2]
+    bl      format_byte_to_decimal
+
+    buf_append lbl_dist_e, lbl_dist_e_len
+    ldrb    w0, [x19, #3]
+    bl      format_byte_to_decimal
+
+    buf_append lbl_dist_c, lbl_dist_c_len
+    ldrb    w0, [x19, #4]
+    bl      format_byte_to_decimal
+
+    buf_append lbl_dist_d, lbl_dist_d_len
+    ldrb    w0, [x19, #5]
+    bl      format_byte_to_decimal
+
+    buf_append lbl_vel_e, lbl_vel_e_len
+    ldrb    w0, [x19, #6]
+    bl      format_signed_byte_to_decimal
+
+    buf_append lbl_vel_c, lbl_vel_c_len
+    ldrb    w0, [x19, #7]
+    bl      format_signed_byte_to_decimal
+
+    buf_append lbl_vel_d, lbl_vel_d_len
+    ldrb    w0, [x19, #8]
+    bl      format_signed_byte_to_decimal
+
+    buf_append lbl_dir, lbl_dir_len
+    ldrb    w0, [x19, #9]
+    bl      format_byte_to_decimal
+
+    buf_append lbl_etx, lbl_etx_len
+    ldrb    w0, [x19, #10]
+    bl      format_byte_to_hex
+
+    sub     x21, x1, x20
+
+    write_str STDOUT, pos_spi_rx, pos_spi_rx_len
+    mov     x1, x20
+    mov     x2, x21
     write_out STDOUT
 
-    add     w11, w11, #1
-    b       ui_rx_loop
-
-ui_rx_done:
-    add     sp, sp, #16
     ldp     x29, x30, [sp], #32
     ret
 
