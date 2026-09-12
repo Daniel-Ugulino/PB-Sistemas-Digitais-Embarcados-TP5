@@ -1,7 +1,3 @@
-// Macros parametrizadas — padroes reais deste firmware
-//
-//   .include "macros.inc"
-//
 .include "syscall.inc"
 
 // --- Syscall ---
@@ -50,7 +46,7 @@
     bl      format_signed_byte_to_decimal
 .endm
 
-// --- Descritores de arquivo (spi.s, log.s) ---
+// --- Descritores de arquivo (log.s; também spi.s na aplicação) ---
 
 .macro fd_load ptr, reg=x0
     ldr     \reg, =\ptr

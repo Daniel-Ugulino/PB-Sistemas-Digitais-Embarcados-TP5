@@ -1,4 +1,4 @@
-// Numeros de syscall Linux AArch64 usados no projeto (stand-alone)
+// Numeros de syscall Linux AArch64 usados no projeto
 
 .equ SYS_IOCTL,     29
 .equ SYS_READ,      63
