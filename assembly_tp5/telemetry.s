@@ -22,7 +22,6 @@ tel_time_end:   .skip 16
 .section .data
 .align 8
 nsec_per_sec: .quad 1000000000
-ns_per_ms:    .word 1000000
 .global spi_rtt_ms
 spi_rtt_ms:   .word 0
 
@@ -45,12 +44,15 @@ tel_update_rtt:
     add     x7, x7, x8
 
 tel_rtt_nsec_ok:
-    mov     x8, #1000
+    ldr     x8, =nsec_per_sec
+    ldr     x8, [x8]
     mul     x9, x6, x8
-    ldr     x8, =ns_per_ms
-    ldr     w8, [x8]
-    udiv    x10, x7, x8
-    add     w0, w9, w10
+    add     x9, x9, x7
+
+    // SPI termina em <1 ms; converte ns -> us com arredondamento
+    add     x9, x9, #500
+    mov     w10, #1000
+    udiv    w0, w9, w10
     ldr     x1, =spi_rtt_ms
     str     w0, [x1]
     ret
