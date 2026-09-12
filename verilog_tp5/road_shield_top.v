@@ -13,6 +13,8 @@ module road_shield_top #(
     parameter BLIND_US    = 300,
     parameter WARMUP_MS   = 50,
     parameter TIMEOUT_MS  = 30,
+    parameter MAX_JUMP_CM = 12,
+    parameter MAX_REJECTS = 3,
     parameter MIN_DIST_CM = 3
 ) (
     input  wire       clk,
@@ -88,7 +90,9 @@ module road_shield_top #(
         .TRIG_US(TRIG_US),
         .BLIND_US(BLIND_US),
         .WARMUP_MS(WARMUP_MS),
-        .TIMEOUT_MS(TIMEOUT_MS)
+        .TIMEOUT_MS(TIMEOUT_MS),
+        .MAX_JUMP_CM(MAX_JUMP_CM),
+        .MAX_REJECTS(MAX_REJECTS)
     ) sensores (
         .clk           (clk),
         .rst           (rst),

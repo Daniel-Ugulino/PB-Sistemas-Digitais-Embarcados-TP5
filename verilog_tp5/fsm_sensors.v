@@ -1,10 +1,12 @@
 module fsm_sensors #(
-    parameter CLK_HZ      = 27_000_000,
-    parameter GAP_MS      = 60,
-    parameter TRIG_US     = 20,
-    parameter BLIND_US    = 300,
-    parameter WARMUP_MS   = 50,
-    parameter TIMEOUT_MS  = 30
+    parameter CLK_HZ       = 27_000_000,
+    parameter GAP_MS       = 60,
+    parameter TRIG_US      = 20,
+    parameter BLIND_US     = 300,
+    parameter WARMUP_MS    = 50,
+    parameter TIMEOUT_MS   = 30,
+    parameter MAX_JUMP_CM  = 12,
+    parameter MAX_REJECTS = 3
 ) (
     input  wire       clk,
     input  wire       rst,
@@ -53,6 +55,21 @@ module fsm_sensors #(
     wire       timeout;
     wire [7:0] dist_lida;
 
+    reg       primed_e;
+    reg       primed_c;
+    reg       primed_d;
+    reg [2:0] rej_e;
+    reg [2:0] rej_c;
+    reg [2:0] rej_d;
+
+    wire [7:0] abs_diff_e = (dist_lida >= dist_e) ? (dist_lida - dist_e) : (dist_e - dist_lida);
+    wire [7:0] abs_diff_c = (dist_lida >= dist_c) ? (dist_lida - dist_c) : (dist_c - dist_lida);
+    wire [7:0] abs_diff_d = (dist_lida >= dist_d) ? (dist_lida - dist_d) : (dist_d - dist_lida);
+
+    wire accept_e = !primed_e || (abs_diff_e <= MAX_JUMP_CM) || (rej_e >= MAX_REJECTS);
+    wire accept_c = !primed_c || (abs_diff_c <= MAX_JUMP_CM) || (rej_c >= MAX_REJECTS);
+    wire accept_d = !primed_d || (abs_diff_d <= MAX_JUMP_CM) || (rej_d >= MAX_REJECTS);
+
     read_hc_sr04 #(
         .CLK_HZ(CLK_HZ),
         .TRIG_US(TRIG_US),
@@ -86,6 +103,12 @@ module fsm_sensors #(
             dist_e        <= 8'd0;
             dist_c        <= 8'd0;
             dist_d        <= 8'd0;
+            primed_e      <= 1'b0;
+            primed_c      <= 1'b0;
+            primed_d      <= 1'b0;
+            rej_e         <= 3'd0;
+            rej_c         <= 3'd0;
+            rej_d         <= 3'd0;
             valid_e       <= 1'b0;
             valid_c       <= 1'b0;
             valid_d       <= 1'b0;
@@ -115,14 +138,29 @@ module fsm_sensors #(
                     if (valido || timeout) begin
                         if (valido) begin
                             if (sensor_atual == 2'd0) begin
-                                dist_e  <= dist_lida;
-                                valid_e <= 1'b1;
+                                if (accept_e) begin
+                                    dist_e <= dist_lida;
+                                    rej_e  <= 3'd0;
+                                end else
+                                    rej_e <= rej_e + 3'd1;
+                                primed_e <= 1'b1;
+                                valid_e  <= 1'b1;
                             end else if (sensor_atual == 2'd1) begin
-                                dist_c  <= dist_lida;
-                                valid_c <= 1'b1;
+                                if (accept_c) begin
+                                    dist_c <= dist_lida;
+                                    rej_c  <= 3'd0;
+                                end else
+                                    rej_c <= rej_c + 3'd1;
+                                primed_c <= 1'b1;
+                                valid_c  <= 1'b1;
                             end else begin
-                                dist_d  <= dist_lida;
-                                valid_d <= 1'b1;
+                                if (accept_d) begin
+                                    dist_d <= dist_lida;
+                                    rej_d  <= 3'd0;
+                                end else
+                                    rej_d <= rej_d + 3'd1;
+                                primed_d <= 1'b1;
+                                valid_d  <= 1'b1;
                             end
                         end else if (sensor_atual == 2'd0)
                             timeout_e <= 1'b1;

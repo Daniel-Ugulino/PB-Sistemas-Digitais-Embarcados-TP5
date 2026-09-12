@@ -1,12 +1,14 @@
 // Top: FSM dos 3 sensores + distancia/velocidade por canal (E, C, D)
 
 module road_sensors #(
-    parameter CLK_HZ      = 27_000_000,
-    parameter GAP_MS      = 60,
-    parameter TRIG_US     = 20,
-    parameter BLIND_US    = 300,
-    parameter WARMUP_MS   = 50,
-    parameter TIMEOUT_MS  = 30
+    parameter CLK_HZ       = 27_000_000,
+    parameter GAP_MS       = 60,
+    parameter TRIG_US      = 20,
+    parameter BLIND_US     = 300,
+    parameter WARMUP_MS    = 50,
+    parameter TIMEOUT_MS   = 30,
+    parameter MAX_JUMP_CM  = 12,
+    parameter MAX_REJECTS = 3
 ) (
     input  wire       clk,
     input  wire       rst,
@@ -45,7 +47,9 @@ module road_sensors #(
         .TRIG_US(TRIG_US),
         .BLIND_US(BLIND_US),
         .WARMUP_MS(WARMUP_MS),
-        .TIMEOUT_MS(TIMEOUT_MS)
+        .TIMEOUT_MS(TIMEOUT_MS),
+        .MAX_JUMP_CM(MAX_JUMP_CM),
+        .MAX_REJECTS(MAX_REJECTS)
     ) fsm (
         .clk          (clk),
         .rst          (rst),
