@@ -59,7 +59,7 @@ lbl_etx:        .ascii " ETX="
 lbl_etx_len:    .quad . - lbl_etx
 
 rx_desc_buf:    .space 192
-pos_spi_rtt:    .ascii "\x1b[9;2H\x1b[KRTT: "
+pos_spi_rtt:    .ascii "\x1b[9;2H\x1b[KTempo de latencia SPI: "
 pos_spi_rtt_len: .quad . - pos_spi_rtt
 suffix_rtt_ms:  .ascii " us"
 suffix_rtt_ms_len: .quad . - suffix_rtt_ms

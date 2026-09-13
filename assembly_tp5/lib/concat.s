@@ -1,4 +1,4 @@
-// Biblioteca util — manipulacao de buffers
+// Biblioteca concat — manipulacao de buffers
 //
 // copy_n_bytes : copia N bytes entre buffers
 
